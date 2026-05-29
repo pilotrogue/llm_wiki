@@ -6,8 +6,10 @@ import { useReviewStore } from "@/stores/review-store"
 import { useChatStore } from "@/stores/chat-store"
 import { listDirectory, openProject } from "@/commands/fs"
 import { getLastProject, getRecentProjects, saveLastProject, loadLlmConfig, loadLanguage, loadSearchApiConfig, loadEmbeddingConfig, loadMultimodalConfig, loadOutputLanguage, loadProviderConfigs, loadActivePresetId, loadProxyConfig, loadScheduledImportConfig, saveScheduledImportConfig, loadSourceWatchConfig, loadApiConfig } from "@/lib/project-store"
+import { activateUiTheme, normalizeUiTheme } from "@/lib/theme"
+import { loadUiTheme } from "@/lib/project-store"
 import { loadReviewItems, loadChatHistory } from "@/lib/persist"
-import { setupAutoSave } from "@/lib/auto-save"
+import { enableChatSave, setupAutoSave } from "@/lib/auto-save"
 import { startClipWatcher } from "@/lib/clip-watcher"
 import { AppLayout } from "@/components/layout/app-layout"
 import { WelcomeScreen } from "@/components/project/welcome-screen"
@@ -242,6 +244,10 @@ function App() {
         if (savedLang) {
           await i18n.changeLanguage(savedLang)
         }
+        const savedUiTheme = normalizeUiTheme(await loadUiTheme())
+        if (savedUiTheme) {
+          activateUiTheme(savedUiTheme)
+        }
         const lastProject = await getLastProject()
         if (lastProject) {
           try {
@@ -374,7 +380,10 @@ function App() {
     }
     // Load persisted chat history
     try {
+      console.log("[chat] loading chat history for project:", proj.path)
       const savedChat = await loadChatHistory(proj.path)
+      console.log("[chat] loaded conversations:", savedChat.conversations.length, "messages:", savedChat.messages.length)
+
       if (savedChat.conversations.length > 0) {
         useChatStore.getState().setConversations(savedChat.conversations)
         useChatStore.getState().setMessages(savedChat.messages)
@@ -386,6 +395,8 @@ function App() {
       }
     } catch {
       // ignore, start fresh
+    } finally{
+      enableChatSave()
     }
   }
 

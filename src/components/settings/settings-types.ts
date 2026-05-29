@@ -1,3 +1,4 @@
+import { UiTheme } from "@/lib/theme"
 import type { CustomApiMode } from "./llm-presets"
 import type { AzureModelFamily, ReasoningConfig, SourceWatchConfig } from "@/stores/wiki-store"
 
@@ -63,6 +64,7 @@ export interface SettingsDraft {
 
   // UI
   uiLanguage: string
+  uiTheme: UiTheme
 
   // Source folder auto watch
   sourceWatchConfig: SourceWatchConfig

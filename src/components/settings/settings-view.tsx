@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button"
 import { useWikiStore } from "@/stores/wiki-store"
 import { useChatStore } from "@/stores/chat-store"
 import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
-import { loadSourceWatchConfig, saveLanguage } from "@/lib/project-store"
+import { loadSourceWatchConfig, saveLanguage, saveUiTheme } from "@/lib/project-store"
 import type { SettingsDraft, DraftSetter } from "./settings-types"
 import { normalizeSourceWatchConfig } from "@/lib/source-watch-config"
 import { LlmProviderSection } from "./sections/llm-provider-section"
@@ -37,6 +37,7 @@ import { ApiServerSection } from "./sections/api-server-section"
 import { ChangelogSection } from "./sections/changelog-section"
 import { MaintenanceSection } from "./sections/maintenance-section"
 import { AboutSection } from "./sections/about-section"
+import { normalizeUiTheme, UiTheme } from "@/lib/theme"
 
 type CategoryId =
   | "llm"
@@ -89,6 +90,7 @@ function initialDraft(
   apiConfig: ReturnType<typeof useWikiStore.getState>["apiConfig"],
   maxHistoryMessages: number,
   uiLanguage: string,
+  uiTheme: UiTheme,
   projectPath?: string,
 ): SettingsDraft {
   // Show absolute path: if stored path is empty, show default using project path
@@ -144,6 +146,7 @@ function initialDraft(
     apiAllowUnauthenticated: apiConfig.allowUnauthenticated,
     apiToken: apiConfig.token,
     uiLanguage,
+    uiTheme: normalizeUiTheme(uiTheme)
   }
 }
 
@@ -158,6 +161,8 @@ export function SettingsView() {
   const setMultimodalConfig = useWikiStore((s) => s.setMultimodalConfig)
   const outputLanguage = useWikiStore((s) => s.outputLanguage)
   const setOutputLanguage = useWikiStore((s) => s.setOutputLanguage)
+  const uiTheme = useWikiStore((s)=> s.uiTheme);
+  const setUiTheme = useWikiStore((s) => s.setUiTheme)
   const proxyConfig = useWikiStore((s) => s.proxyConfig)
   const setProxyConfig = useWikiStore((s) => s.setProxyConfig)
   const scheduledImportConfig = useWikiStore((s) => s.scheduledImportConfig)
@@ -168,6 +173,7 @@ export function SettingsView() {
   const setApiConfig = useWikiStore((s) => s.setApiConfig)
   const maxHistoryMessages = useChatStore((s) => s.maxHistoryMessages)
   const setMaxHistoryMessages = useChatStore((s) => s.setMaxHistoryMessages)
+  
   // Drives the red dot next to the "About" row in the settings
   // sidebar. Uses `hasAvailableUpdate` (NOT `shouldShowUpdateBanner`)
   // so the indicator remains even after the user dismisses the
@@ -192,6 +198,7 @@ export function SettingsView() {
       apiConfig,
       maxHistoryMessages,
       i18n.language,
+      uiTheme,
       project?.path,
     ),
   )
@@ -235,6 +242,7 @@ export function SettingsView() {
         apiConfig,
         maxHistoryMessages,
         prev.uiLanguage,
+        uiTheme,
         project?.path,
       ),
     )
@@ -322,6 +330,8 @@ export function SettingsView() {
     await saveMultimodalConfig(newMultimodal)
     setOutputLanguage(draft.outputLanguage as typeof outputLanguage)
     await saveOutputLanguage(draft.outputLanguage as typeof outputLanguage, project?.id)
+    setUiTheme(draft.uiTheme)
+    await saveUiTheme(draft.uiTheme)
     setProxyConfig(newProxy)
     await saveProxyConfig(newProxy)
     const newSourceWatch = normalizeSourceWatchConfig(draft.sourceWatchConfig)

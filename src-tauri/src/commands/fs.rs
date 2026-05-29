@@ -581,7 +581,7 @@ fn extract_docx_markdown(archive: &mut zip::ZipArchive<fs::File>) -> Result<Stri
     while i < len {
         if chars[i] == '<' {
             // Read tag name
-            let tag_start = i;
+            let _tag_start = i;
             i += 1;
             let is_closing = i < len && chars[i] == '/';
             if is_closing {

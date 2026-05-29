@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { WikiProject, FileNode } from "@/types/wiki"
 import { DEFAULT_SOURCE_WATCH_CONFIG } from "@/lib/source-watch-config"
+import { UiTheme } from "@/lib/theme"
 
 /**
  * Wire protocol used when `provider === "custom"`. Other providers have a
@@ -273,6 +274,7 @@ interface WikiState {
   embeddingConfig: EmbeddingConfig
   multimodalConfig: MultimodalConfig
   outputLanguage: OutputLanguage
+  uiTheme: UiTheme
   proxyConfig: ProxyConfig
   scheduledImportConfig: ScheduledImportConfig
   sourceWatchConfig: SourceWatchConfig
@@ -293,6 +295,7 @@ interface WikiState {
   setEmbeddingConfig: (config: EmbeddingConfig) => void
   setMultimodalConfig: (config: MultimodalConfig) => void
   setOutputLanguage: (lang: OutputLanguage) => void
+  setUiTheme: (theme: UiTheme) => void
   setProxyConfig: (config: ProxyConfig) => void
   setScheduledImportConfig: (config: ScheduledImportConfig) => void
   setSourceWatchConfig: (config: SourceWatchConfig) => void
@@ -365,6 +368,7 @@ export const useWikiStore = create<WikiState>((set) => ({
   },
 
   outputLanguage: "auto",
+  uiTheme: "dark",
 
   proxyConfig: {
     enabled: false,
@@ -399,6 +403,7 @@ export const useWikiStore = create<WikiState>((set) => ({
   setEmbeddingConfig: (embeddingConfig) => set({ embeddingConfig }),
   setMultimodalConfig: (multimodalConfig) => set({ multimodalConfig }),
   setOutputLanguage: (outputLanguage) => set({ outputLanguage }),
+  setUiTheme: (uiTheme) => set({ uiTheme }),
   setProxyConfig: (proxyConfig) => set({ proxyConfig }),
   setScheduledImportConfig: (scheduledImportConfig) => set({ scheduledImportConfig }),
   setSourceWatchConfig: (sourceWatchConfig) => set({ sourceWatchConfig }),

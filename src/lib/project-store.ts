@@ -3,6 +3,7 @@ import type { WikiProject } from "@/types/wiki"
 import type { ApiConfig, LlmConfig, SearchApiConfig, EmbeddingConfig, MultimodalConfig, OutputLanguage, ProviderConfigs, ProxyConfig, ScheduledImportConfig, SourceWatchConfig } from "@/stores/wiki-store"
 import { normalizeSourceWatchConfig } from "@/lib/source-watch-config"
 import { normalizePath } from "@/lib/path-utils"
+import type { UiTheme } from "@/lib/theme"
 
 const STORE_NAME = "app-state.json"
 const RECENT_PROJECTS_KEY = "recentProjects"
@@ -206,6 +207,7 @@ export async function removeFromRecentProjects(
 }
 
 const LANGUAGE_KEY = "language"
+const UI_THEME_KEY = "uiTheme"
 
 export async function saveLanguage(lang: string): Promise<void> {
   const store = await getStore()
@@ -312,4 +314,14 @@ export async function loadUpdateCheckState(): Promise<PersistedUpdateCheckState 
   return (
     (await store.get<PersistedUpdateCheckState>(UPDATE_CHECK_STATE_KEY)) ?? null
   )
+}
+
+export async function saveUiTheme(theme: UiTheme): Promise<void> {
+  const store = await getStore()
+  await store.set(UI_THEME_KEY, theme)
+}
+
+export async function loadUiTheme(): Promise<UiTheme | null> {
+  const store = await getStore()
+  return (await store.get<UiTheme>(UI_THEME_KEY)) ?? null
 }
