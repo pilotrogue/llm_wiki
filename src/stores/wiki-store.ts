@@ -32,6 +32,7 @@ interface LlmConfig {
 }
 
 export type SearchProvider = "tavily" | "serpapi" | "searxng" | "ollama" | "none"
+export type DeepResearchSource = "web" | "anytxt" | "both"
 export type SerpApiEngine =
   | "google"
   | "google_news"
@@ -66,6 +67,14 @@ export interface SearchProviderOverride {
 
 export type SearchProviderConfigs = Partial<Record<Exclude<SearchProvider, "none">, SearchProviderOverride>>
 
+export interface AnyTxtConfig {
+  enabled?: boolean
+  endpoint?: string
+  filterDir?: string
+  filterExt?: string
+  limit?: number
+}
+
 interface SearchApiConfig {
   provider: SearchProvider
   apiKey: string
@@ -74,6 +83,8 @@ interface SearchApiConfig {
   searXngCategories?: SearXngCategory[]
   ollamaUrl?: string
   providerConfigs?: SearchProviderConfigs
+  deepResearchSource?: DeepResearchSource
+  anyTxt?: AnyTxtConfig
 }
 
 interface EmbeddingConfig {
@@ -98,6 +109,14 @@ interface EmbeddingConfig {
    */
   maxChunkChars?: number
   overlapChunkChars?: number
+  /**
+   * Extra HTTP headers to send with every embedding request, e.g.
+   *   { "X-Model-Provider-Id": "siliconflow" }
+   * for gateways like mify that route by header. Reserved names
+   * (Authorization, Content-Type, Host, Content-Length, x-goog-api-key)
+   * are ignored — they're managed by the embedding client itself.
+   */
+  extraHeaders?: Record<string, string>
 }
 
 /**
@@ -243,11 +262,20 @@ export interface ProviderOverride {
 
 export type ProviderConfigs = Record<string, ProviderOverride>
 
+export interface ExternalPreview {
+  title: string
+  path: string
+  source: string
+  url: string
+  snippet: string
+}
+
 interface WikiState {
   project: WikiProject | null
   fileTree: FileNode[]
   selectedFile: string | null
   fileContent: string
+  externalPreview: ExternalPreview | null
   /**
    * One-shot scroll target for the markdown preview. When the user
    * clicks an image in search results and chooses "jump to source",
@@ -285,6 +313,7 @@ interface WikiState {
   setFileTree: (tree: FileNode[]) => void
   setSelectedFile: (path: string | null) => void
   setFileContent: (content: string) => void
+  setExternalPreview: (preview: ExternalPreview | null) => void
   setPendingScrollImageSrc: (src: string | null) => void
   setChatExpanded: (expanded: boolean) => void
   setActiveView: (view: WikiState["activeView"]) => void
@@ -308,6 +337,7 @@ export const useWikiStore = create<WikiState>((set) => ({
   fileTree: [],
   selectedFile: null,
   fileContent: "",
+  externalPreview: null,
   pendingScrollImageSrc: null,
   chatExpanded: false,
   activeView: "wiki",
@@ -328,8 +358,9 @@ export const useWikiStore = create<WikiState>((set) => ({
 
   setProject: (project) => set({ project }),
   setFileTree: (fileTree) => set({ fileTree }),
-  setSelectedFile: (selectedFile) => set({ selectedFile }),
+  setSelectedFile: (selectedFile) => set({ selectedFile, externalPreview: null }),
   setFileContent: (fileContent) => set({ fileContent }),
+  setExternalPreview: (externalPreview) => set({ externalPreview }),
   setPendingScrollImageSrc: (pendingScrollImageSrc) => set({ pendingScrollImageSrc }),
   setChatExpanded: (chatExpanded) => set({ chatExpanded }),
   setActiveView: (activeView) => set({ activeView }),
@@ -340,6 +371,14 @@ export const useWikiStore = create<WikiState>((set) => ({
     searXngUrl: "",
     searXngCategories: ["general"],
     providerConfigs: {},
+    deepResearchSource: "web",
+    anyTxt: {
+      enabled: false,
+      endpoint: "http://127.0.0.1:9920",
+      filterDir: "",
+      filterExt: "*",
+      limit: 20,
+    },
   },
 
   embeddingConfig: {

@@ -122,6 +122,7 @@ function initialDraft(
     embeddingOutputDimensionality: embed.outputDimensionality,
     embeddingMaxChunkChars: embed.maxChunkChars,
     embeddingOverlapChunkChars: embed.overlapChunkChars,
+    embeddingExtraHeaders: embed.extraHeaders ?? {},
     multimodalEnabled: multimodal.enabled,
     multimodalUseMainLlm: multimodal.useMainLlm,
     multimodalProvider: multimodal.provider,
@@ -295,6 +296,7 @@ export function SettingsView() {
       outputDimensionality: draft.embeddingOutputDimensionality,
       maxChunkChars: draft.embeddingMaxChunkChars,
       overlapChunkChars: draft.embeddingOverlapChunkChars,
+      extraHeaders: draft.embeddingExtraHeaders,
     }
     const newMultimodal = {
       enabled: draft.multimodalEnabled,

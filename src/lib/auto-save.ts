@@ -1,9 +1,11 @@
 import { useReviewStore } from "@/stores/review-store"
+import { useLintStore } from "@/stores/lint-store"
 import { useChatStore } from "@/stores/chat-store"
 import { useWikiStore } from "@/stores/wiki-store"
-import { saveReviewItems, saveChatHistory } from "./persist"
+import { saveReviewItems, saveLintItems, saveChatHistory } from "./persist"
 
 let reviewTimer: ReturnType<typeof setTimeout> | null = null
+let lintTimer: ReturnType<typeof setTimeout> | null = null
 let chatTimer: ReturnType<typeof setTimeout> | null = null
 let chatSaveEnabled = false
 
@@ -22,6 +24,18 @@ export function setupAutoSave(): void {
     }, 1000)
   })
 
+  // Auto-save lint items (debounced 1s)
+  useLintStore.subscribe((state) => {
+    const projectPath = useWikiStore.getState().project?.path
+    if (lintTimer) clearTimeout(lintTimer)
+    lintTimer = setTimeout(() => {
+      if (projectPath) {
+        saveLintItems(projectPath, state.items).catch(() => {})
+      }
+    }, 1000)
+  })
+
+  // Auto-save chat conversations and messages (debounced 2s, skip during streaming)
   useChatStore.subscribe((state) => {
     if (!chatSaveEnabled) return
     if (state.isStreaming) return
